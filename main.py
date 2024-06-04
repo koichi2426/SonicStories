@@ -82,16 +82,21 @@ chapters = get_chapters('text_folder/text.txt')
 bgm_folder = 'bgm_folder'
 background_folder = 'background_folder'
 
-# 2章ごとにビデオを生成
-for i in range(0, len(chapters), 2):
-    chapter_text = ''.join(chapters[i:i+2])  # 2章ずつのテキストを取得し、連結して単一の文字列にする
-    output_file = f'output_folder/{i//2 + 1}.mp4'  # 出力ファイル名
+# BGMフォルダ内の最初のmp3ファイルを取得
+bgm_files = [f for f in os.listdir(bgm_folder) if f.endswith('.mp3')]
+if bgm_files:
+    # BGMフォルダ内の最初のmp3ファイルを取得
+    bgm_file = os.path.join(bgm_folder, bgm_files[0])
 
-    # BGMファイルと背景画像ファイルのパス
-    bgm_file = os.path.join(bgm_folder, '1.mp3')
-    background_file = os.path.join(background_folder, f'{(i//2)+1}.png')
+    # 2章ごとにビデオを生成
+    for i in range(0, len(chapters), 2):
+        chapter_text = ''.join(chapters[i:i+2])  # 2章ずつのテキストを取得し、連結して単一の文字列にする
+        output_file = f'output_folder/{i//2 + 1}.mp4'  # 出力ファイル名
 
-    # create_video_from_text関数を呼び出してビデオを生成
-    create_video_from_text(chapter_text, bgm_file, background_file, output_file)
+        # BGMファイルと背景画像ファイルのパス
+        background_file = os.path.join(background_folder, f'{(i//2)+1}.png')
 
-print("All videos created successfully.")
+        # create_video_from_text関数を呼び出してビデオを生成
+        create_video_from_text(chapter_text, bgm_file, background_file, output_file)
+
+    print("All videos created successfully.")
