@@ -15,8 +15,8 @@ os.makedirs(output_folder, exist_ok=True)
 # 一時ファイルのリスト
 temp_files = []
 
-# 読み聞かせの速度 (1.0 が通常速度)
-speed_factor = 1.0
+# 読み上げ速度の調整（1.0が通常速度、0.5は半分の速度、2.0は2倍の速度）
+speech_speed = 1.2
 
 # テキストファイルの読み込み
 for text_file in os.listdir(text_folder):
@@ -31,17 +31,17 @@ for text_file in os.listdir(text_folder):
         tts.save(speech_mp3)
         temp_files.append(speech_mp3)
 
-        # スピーチの読み込み
-        speech_audio = AudioFileClip(speech_mp3)
-
-        # スピーチの速度を調整
-        adjusted_speech_audio = speech_audio.fx(vfx.speedx, speed_factor)
-        adjusted_speech_mp3 = "adjusted_speech.mp3"
-        adjusted_speech_audio.write_audiofile(adjusted_speech_mp3, codec='mp3')
-        temp_files.append(adjusted_speech_mp3)
+        # 読み上げ速度を調整
+        speech = AudioSegment.from_mp3(speech_mp3)
+        adjusted_speed_speech = speech._spawn(speech.raw_data, overrides={
+            "frame_rate": int(speech.frame_rate * speech_speed)
+        }).set_frame_rate(speech.frame_rate)
+        adjusted_speed_speech_mp3 = "adjusted_speed_speech.mp3"
+        adjusted_speed_speech.export(adjusted_speed_speech_mp3, format="mp3")
+        temp_files.append(adjusted_speed_speech_mp3)
 
         # 調整後のスピーチの長さを取得
-        speech_duration = adjusted_speech_audio.duration
+        speech_duration = adjusted_speed_speech.duration_seconds
 
         # BGMの読み込みと合成
         for bgm_file in os.listdir(bgm_folder):
@@ -54,8 +54,7 @@ for text_file in os.listdir(text_folder):
                 bgm_extended = bgm * loops_needed
                 bgm_extended = bgm_extended[:int(speech_duration * 1000)]  # スピーチと同じ長さにカット
 
-                speech = AudioSegment.from_mp3(adjusted_speech_mp3)
-                combined = bgm_extended.overlay(speech)
+                combined = bgm_extended.overlay(adjusted_speed_speech)
                 combined_audio = "combined_audio.mp3"
                 combined.export(combined_audio, format="mp3")
                 temp_files.append(combined_audio)
