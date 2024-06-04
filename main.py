@@ -64,8 +64,6 @@ def create_video_from_text(text_content, bgm_path, background_path, output_path,
         if os.path.exists(temp_file):
             os.remove(temp_file)
 
-# 使用例
-
 # テキストファイルから章ごとに文字列を取得する関数
 def get_chapters(filename):
     chapters = []  # 章ごとの文字列を格納するリスト
@@ -88,12 +86,29 @@ def get_chapters(filename):
 
     return chapters
 
+# output_folderにあるMP4ファイルを取得し、順番に連結する
+def concatenate_videos(output_folder, final_output):
+    video_files = [f for f in os.listdir(output_folder) if f.endswith('.mp4')]
+    video_files.sort()  # ファイル名でソートして順番に連結する
+
+    # VideoFileClipオブジェクトのリストを作成
+    clips = [VideoFileClip(os.path.join(output_folder, file)) for file in video_files]
+
+    # 動画を連結
+    final_clip = concatenate_videoclips(clips, method="compose")
+
+    # 最終出力ファイルを保存
+    final_clip.write_videofile(final_output, codec="libx264", audio_codec="aac")
+
+# 使用例
+
 # テキストファイルから章ごとの文字列を取得
 chapters = get_chapters('text_folder/text.txt')
 
 # BGMファイルと背景画像ファイルのパス
 bgm_folder = 'bgm_folder'
 background_folder = 'background_folder'
+output_folder = 'output_folder'
 
 # BGMフォルダ内の最初のmp3ファイルを取得
 bgm_files = [f for f in os.listdir(bgm_folder) if f.endswith('.mp3')]
@@ -105,7 +120,7 @@ if bgm_files:
     for i in range(0, len(chapters), 2):
         chapter_text = ''.join(chapters[i:i+2])  # 2章ずつのテキストを取得し、連結して単一の文字列にする
         chapter_text = remove_noise(chapter_text)  # ノイズを削除
-        output_file = f'output_folder/{i//2 + 1}.mp4'  # 出力ファイル名
+        output_file = os.path.join(output_folder, f'{i//2 + 1}.mp4')  # 出力ファイル名
 
         # BGMファイルと背景画像ファイルのパス
         background_file = os.path.join(background_folder, f'{(i//2)+1}.png')
@@ -113,4 +128,10 @@ if bgm_files:
         # create_video_from_text関数を呼び出してビデオを生成
         create_video_from_text(chapter_text, bgm_file, background_file, output_file)
 
-    print("All videos created successfully.")
+    # すべてのビデオを連結して最終出力ファイルを作成
+    final_output_file = os.path.join(output_folder, 'story.mp4')
+    concatenate_videos(output_folder, final_output_file)
+
+    print("All videos created and concatenated successfully.")
+else:
+    print("No BGM files found in the bgm_folder.")
