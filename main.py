@@ -3,6 +3,7 @@ from moviepy.editor import *
 from gtts import gTTS
 from pydub import AudioSegment
 
+# create_video_from_text関数の定義
 def create_video_from_text(text_content, bgm_path, background_path, output_path, speech_speed=1.0):
     # 一時ファイルのリスト
     temp_files = []
@@ -51,9 +52,46 @@ def create_video_from_text(text_content, bgm_path, background_path, output_path,
         if os.path.exists(temp_file):
             os.remove(temp_file)
 # 使用例
-text_content = "ここにテキストを入力してください。"
-bgm_file = "bgm_folder/216_long_BPM65.mp3"
-background_file = "background_folder/2.png"
-output_file = "output_folder/output_video1.mp4"
 
-create_video_from_text(text_content, bgm_file, background_file, output_file)
+# テキストファイルから章ごとに文字列を取得する関数
+def get_chapters(filename):
+    chapters = []  # 章ごとの文字列を格納するリスト
+
+    with open(filename, 'r', encoding='utf-8') as file:
+        chapter_text = ''  # 現在の章の文字列を初期化する
+        for line in file:
+            line = line.strip()  # 行末の改行を削除
+
+            if line == "%%%%%%%%":
+                # `%%%%%%%%`で章が終わるとき、現在の章をリストに追加して新しい章のための文字列を初期化する
+                chapters.append(chapter_text)
+                chapter_text = ''  # 新しい章のために初期化
+            else:
+                # 現在の章の文字列に行を追加する
+                chapter_text += line + '\n'
+
+        # 最後の章をリストに追加する
+        chapters.append(chapter_text)
+
+    return chapters
+
+# テキストファイルから章ごとの文字列を取得
+chapters = get_chapters('text_folder/text.txt')
+
+# BGMファイルと背景画像ファイルのパス
+bgm_folder = 'bgm_folder'
+background_folder = 'background_folder'
+
+# 2章ごとにビデオを生成
+for i in range(0, len(chapters), 2):
+    chapter_text = ''.join(chapters[i:i+2])  # 2章ずつのテキストを取得し、連結して単一の文字列にする
+    output_file = f'output_folder/{i//2 + 1}.mp4'  # 出力ファイル名
+
+    # BGMファイルと背景画像ファイルのパス
+    bgm_file = os.path.join(bgm_folder, '1.mp3')
+    background_file = os.path.join(background_folder, f'{(i//2)+1}.png')
+
+    # create_video_from_text関数を呼び出してビデオを生成
+    create_video_from_text(chapter_text, bgm_file, background_file, output_file)
+
+print("All videos created successfully.")
