@@ -7,11 +7,16 @@ import re
 # ノイズを削除する関数
 def remove_noise(text):
     # ノイズとして定義された記号を削除
-    cleaned_text = re.sub(r'[#%&]', '', text)
+    noise_chars = r'[!@#$%^&*()_+\-=\[\]{};\'\\:"|,.<>\/?~`]'
+    cleaned_text = re.sub(noise_chars, '', text)
     return cleaned_text
 
 # create_video_from_text関数の定義
 def create_video_from_text(text_content, bgm_path, background_path, output_path, speech_speed=1.0):
+    if not text_content.strip():
+        print("Warning: The provided text is empty. Skipping video creation.")
+        return
+    
     # 一時ファイルのリスト
     temp_files = []
 
@@ -58,6 +63,7 @@ def create_video_from_text(text_content, bgm_path, background_path, output_path,
     for temp_file in temp_files:
         if os.path.exists(temp_file):
             os.remove(temp_file)
+
 # 使用例
 
 # テキストファイルから章ごとに文字列を取得する関数
