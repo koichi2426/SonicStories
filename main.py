@@ -2,6 +2,13 @@ import os
 from moviepy.editor import *
 from gtts import gTTS
 from pydub import AudioSegment
+import re
+
+# ノイズを削除する関数
+def remove_noise(text):
+    # ノイズとして定義された記号を削除
+    cleaned_text = re.sub(r'[#%&]', '', text)
+    return cleaned_text
 
 # create_video_from_text関数の定義
 def create_video_from_text(text_content, bgm_path, background_path, output_path, speech_speed=1.0):
@@ -91,6 +98,7 @@ if bgm_files:
     # 2章ごとにビデオを生成
     for i in range(0, len(chapters), 2):
         chapter_text = ''.join(chapters[i:i+2])  # 2章ずつのテキストを取得し、連結して単一の文字列にする
+        chapter_text = remove_noise(chapter_text)  # ノイズを削除
         output_file = f'output_folder/{i//2 + 1}.mp4'  # 出力ファイル名
 
         # BGMファイルと背景画像ファイルのパス
