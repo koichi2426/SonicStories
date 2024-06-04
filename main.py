@@ -16,7 +16,7 @@ os.makedirs(output_folder, exist_ok=True)
 temp_files = []
 
 # 読み上げ速度の調整（1.0が通常速度、0.5は半分の速度、2.0は2倍の速度）
-speech_speed = 1.2
+speech_speed = 1.0
 
 # テキストファイルの読み込み
 for text_file in os.listdir(text_folder):
