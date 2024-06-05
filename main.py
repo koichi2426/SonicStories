@@ -123,6 +123,24 @@ os.makedirs(chapters_folder, exist_ok=True)
 story_file = os.path.join(text_folder, 'story.txt')
 chapters = get_chapters(story_file)
 
+# 2章ごとにchapterを生成
+for i in range(0, len(chapters), 2):
+    chapter_text = ''.join(chapters[i:i+2])  # 2章ずつのテキストを取得し、連結して単一の文字列にする
+    chapter_text = remove_noise(chapter_text)  # ノイズを削除
+
+    if chapter_text.strip():  # chapter_textが空でない場合に実行
+        # prompt_textを作成
+        prompt_text = chapter_text + " この場面に適した画像をアニメ調で幻想的に１つ生成してください。"
+        
+        # 章ごとにテキストファイルを保存
+        chapter_file = os.path.join(chapters_folder, f'chapter{i//2 + 1}.txt')
+        with open(chapter_file, 'w', encoding='utf-8') as file:
+            file.write(prompt_text)
+
+# ターミナルにメッセージを表示して処理を停止
+print("チャプターのサムネイルをbackground_folderに配置してください:")
+input("ターミナルをクリックして続行...")
+
 if not chapters:
     print(f"No chapters found in {story_file}. Please check the file.")
 else:
@@ -138,22 +156,10 @@ else:
             chapter_text = remove_noise(chapter_text)  # ノイズを削除
 
             if chapter_text.strip():  # chapter_textが空でない場合に実行
-                # prompt_textを作成
-                prompt_text = chapter_text + " この場面に適した画像をアニメ調で幻想的に１つ生成してください。"
-                
-                # 章ごとにテキストファイルを保存
-                chapter_file = os.path.join(chapters_folder, f'chapter{i//2 + 1}.txt')
-                with open(chapter_file, 'w', encoding='utf-8') as file:
-                    file.write(prompt_text)
-                
                 output_file = os.path.join(output_folder, f'{i//2 + 1}.mp4')  # 出力ファイル名
 
                 # BGMファイルと背景画像ファイルのパス
                 background_file = os.path.join(background_folder, f'{(i//2)+1}.png')
-
-                # ターミナルにメッセージを表示して処理を停止
-                print(f"最新のチャプターのサムネイルをbackground_folderに配置してください: {background_file}")
-                input("ターミナルをクリックして続行...")
 
                 # create_video_from_text関数を呼び出してビデオを生成
                 create_video_from_text(chapter_text, bgm_file, background_file, output_file)
