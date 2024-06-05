@@ -12,7 +12,7 @@ def remove_noise(text):
     return cleaned_text
 
 # create_video_from_text関数の定義
-def create_video_from_text(text_content, bgm_path, background_path, output_path, speech_speed=1.0, retry_count=3):
+def create_video_from_text(text_content, bgm_path, background_path, output_path, speech_speed=1.0, retry_count=3, bgm_volume=-10):
     if not text_content.strip():
         print("Warning: The provided text is empty. Skipping video creation.")
         return
@@ -47,6 +47,7 @@ def create_video_from_text(text_content, bgm_path, background_path, output_path,
 
     # BGMの読み込みと合成
     bgm = AudioSegment.from_mp3(bgm_path)
+    bgm = bgm + bgm_volume  # BGMの音量を下げる
     loops_needed = int(speech_duration / bgm.duration_seconds) + 1
     bgm_extended = bgm * loops_needed
     bgm_extended = bgm_extended[:int(speech_duration * 1000)]
