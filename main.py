@@ -94,7 +94,7 @@ def get_chapters(filename):
 # output_folderにあるMP4ファイルを取得し、順番に連結する
 def concatenate_videos(output_folder, final_output):
     video_files = [f for f in os.listdir(output_folder) if f.endswith('.mp4')]
-    video_files.sort()
+    video_files.sort(key=lambda f: int(re.sub('\D', '', f)))
 
     clips = [VideoFileClip(os.path.join(output_folder, file)) for file in video_files]
     final_clip = concatenate_videoclips(clips, method="compose")
