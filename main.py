@@ -68,6 +68,10 @@ def create_video_from_text(text_content, bgm_path, background_path, output_path,
 def get_chapters(filename):
     chapters = []  # 章ごとの文字列を格納するリスト
 
+    if not os.path.exists(filename):
+        print(f"Error: The file {filename} does not exist.")
+        return chapters  # 空のリストを返す
+
     with open(filename, 'r', encoding='utf-8') as file:
         chapter_text = ''  # 現在の章の文字列を初期化する
         for line in file:
@@ -102,36 +106,61 @@ def concatenate_videos(output_folder, final_output):
 
 # 使用例
 
-# テキストファイルから章ごとの文字列を取得
-chapters = get_chapters('text_folder/text.txt')
-
-# BGMファイルと背景画像ファイルのパス
+# ディレクトリが存在しない場合は作成
+text_folder = 'text_folder'
 bgm_folder = 'bgm_folder'
 background_folder = 'background_folder'
 output_folder = 'output_folder'
+chapters_folder = 'chapters_folder'
 
-# BGMフォルダ内の最初のmp3ファイルを取得
-bgm_files = [f for f in os.listdir(bgm_folder) if f.endswith('.mp3')]
-if bgm_files:
-    # BGMフォルダ内の最初のmp3ファイルを取得
-    bgm_file = os.path.join(bgm_folder, bgm_files[0])
+os.makedirs(text_folder, exist_ok=True)
+os.makedirs(bgm_folder, exist_ok=True)
+os.makedirs(background_folder, exist_ok=True)
+os.makedirs(output_folder, exist_ok=True)
+os.makedirs(chapters_folder, exist_ok=True)
 
-    # 2章ごとにビデオを生成
-    for i in range(0, len(chapters), 2):
-        chapter_text = ''.join(chapters[i:i+2])  # 2章ずつのテキストを取得し、連結して単一の文字列にする
-        chapter_text = remove_noise(chapter_text)  # ノイズを削除
-        output_file = os.path.join(output_folder, f'{i//2 + 1}.mp4')  # 出力ファイル名
+# テキストファイルから章ごとの文字列を取得
+story_file = os.path.join(text_folder, 'story.txt')
+chapters = get_chapters(story_file)
 
-        # BGMファイルと背景画像ファイルのパス
-        background_file = os.path.join(background_folder, f'{(i//2)+1}.png')
-
-        # create_video_from_text関数を呼び出してビデオを生成
-        create_video_from_text(chapter_text, bgm_file, background_file, output_file)
-
-    # すべてのビデオを連結して最終出力ファイルを作成
-    final_output_file = os.path.join(output_folder, 'story.mp4')
-    concatenate_videos(output_folder, final_output_file)
-
-    print("All videos created and concatenated successfully.")
+if not chapters:
+    print(f"No chapters found in {story_file}. Please check the file.")
 else:
-    print("No BGM files found in the bgm_folder.")
+    # BGMフォルダ内の最初のmp3ファイルを取得
+    bgm_files = [f for f in os.listdir(bgm_folder) if f.endswith('.mp3')]
+    if bgm_files:
+        # BGMフォルダ内の最初のmp3ファイルを取得
+        bgm_file = os.path.join(bgm_folder, bgm_files[0])
+
+        # 2章ごとにビデオを生成
+        for i in range(0, len(chapters), 2):
+            chapter_text = ''.join(chapters[i:i+2])  # 2章ずつのテキストを取得し、連結して単一の文字列にする
+            chapter_text = remove_noise(chapter_text)  # ノイズを削除
+
+            # prompt_textを作成
+            prompt_text = chapter_text + " この場面に適した画像をアニメ調で幻想的に１つ生成してください。"
+            
+            # 章ごとにテキストファイルを保存
+            chapter_file = os.path.join(chapters_folder, f'chapter{i//2 + 1}.txt')
+            with open(chapter_file, 'w', encoding='utf-8') as file:
+                file.write(prompt_text)
+            
+            output_file = os.path.join(output_folder, f'{i//2 + 1}.mp4')  # 出力ファイル名
+
+            # BGMファイルと背景画像ファイルのパス
+            background_file = os.path.join(background_folder, f'{(i//2)+1}.png')
+
+            # ターミナルにメッセージを表示して処理を停止
+            print(f"最新のチャプターのサムネイルをbackground_folderに配置してください: {background_file}")
+            input("ターミナルをクリックして続行...")
+
+            # create_video_from_text関数を呼び出してビデオを生成
+            create_video_from_text(chapter_text, bgm_file, background_file, output_file)
+
+        # すべてのビデオを連結して最終出力ファイルを作成
+        final_output_file = os.path.join(output_folder, 'story.mp4')
+        concatenate_videos(output_folder, final_output_file)
+
+        print("All videos created and concatenated successfully.")
+    else:
+        print("No BGM files found in the bgm_folder.")
