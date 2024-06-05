@@ -1,7 +1,6 @@
-import os
 from moviepy.editor import *
 from gtts import gTTS, gTTSError
-from pydub import AudioSegment
+from pydub import AudioSegment, effects
 import re
 import time
 
@@ -43,6 +42,7 @@ def create_video_from_text(text_content, bgm_path, background_path, output_path,
     adjusted_speed_speech = speech._spawn(speech.raw_data, overrides={
         "frame_rate": int(speech.frame_rate * speech_speed)
     }).set_frame_rate(speech.frame_rate)
+    adjusted_speed_speech = effects.normalize(adjusted_speed_speech)  # 音声の正規化
     adjusted_speed_speech_mp3 = "adjusted_speed_speech.mp3"
     adjusted_speed_speech.export(adjusted_speed_speech_mp3, format="mp3")
     temp_files.append(adjusted_speed_speech_mp3)
