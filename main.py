@@ -1,3 +1,4 @@
+import os
 from moviepy.editor import *
 from gtts import gTTS, gTTSError
 from pydub import AudioSegment, effects
@@ -70,9 +71,13 @@ def create_video_from_text(text_content, bgm_path, background_path, output_path,
     # 背景画像の読み込み
     background = ImageClip(background_path).set_duration(speech_duration)
 
+    # 字幕を追加
+    subtitle = TextClip(text_content, fontsize=24, color='white', bg_color='black', method='caption', size=(background.w, None)).set_position(('center', 'bottom')).set_duration(speech_duration)
+
     # 音声と背景画像を合成して動画を作成
     audio = AudioFileClip(combined_audio)
     video = background.set_audio(audio)
+    video = CompositeVideoClip([video, subtitle])  # 字幕を動画に追加
     video.write_videofile(output_path, codec="libx264", audio_codec="aac", fps=24)
 
     # 一時ファイルの削除
